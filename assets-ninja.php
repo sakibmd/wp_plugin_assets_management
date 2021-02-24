@@ -33,6 +33,8 @@ class AssetsNinja
         add_action('plugins_loaded', array($this, 'load_textdomain'));
         add_action('wp_enqueue_scripts', array($this, 'load_front_assets'), 15);
         add_action('admin_enqueue_scripts', array($this, 'load_admin_assets'));
+
+        add_shortcode('inlineImage', array($this, 'asn_shortcode_bg_image'));
     }
 
     public function load_textdomain()
@@ -76,8 +78,10 @@ class AssetsNinja
         wp_enqueue_script('asn-another-js', ASN_ASSETS_PUBLIC_DIR . "js/another.js", array('jquery'), $this->version, true);
          */
 
+        wp_enqueue_style('asn-main-css', ASN_ASSETS_PUBLIC_DIR . "css/main.css", null, $this->version);
+
         $js_files = array(
-            'asn-main-js' => array('path' => ASN_ASSETS_PUBLIC_DIR . "js/main.js", 'dep' => array('jquery', 'asn-another-js')),
+            'asn-main-js' => array('path' => ASN_ASSETS_PUBLIC_DIR . "js/main.js", 'dep' => array('jquery')),
             'asn-another-js' => array('path' => ASN_ASSETS_PUBLIC_DIR . "js/another.js", 'dep' => array('jquery')),
         );
         foreach ($js_files as $handle => $fileinfo) {
@@ -95,6 +99,26 @@ class AssetsNinja
         wp_localize_script('asn-main-js', 'myInfo', $myInfo);
         wp_localize_script('asn-main-js', 'translaton', $translated_string);
 
+        $attachment_image_src = wp_get_attachment_image_src(40, 'medium');
+
+        $shortcode_image = <<<EOD
+        #bgmedia{
+            background-image:url($attachment_image_src[0]);
+        }
+EOD;
+
+        wp_add_inline_style('asn-main-css', $shortcode_image);
+
+    }
+
+    public function asn_shortcode_bg_image($attributes)
+    {
+        $shortcode_output = <<<EOD
+
+<div id="bgmedia"></div>
+EOD;
+
+        return $shortcode_output;
     }
 }
 
